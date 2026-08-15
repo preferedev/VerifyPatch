@@ -1,0 +1,60 @@
+version: 2
+
+runtime:
+  optional_timeout_seconds: 900
+  artifacts_dir: .verifypatch/artifacts
+
+requirements:
+  enabled: false
+  provider: openai
+  model: null
+  task_files: []
+  base_sources:
+    - README.md
+    - docs/**/*.md
+    - openapi.yaml
+    - schemas/**/*.json
+  minimum_confidence: high
+  timeout_seconds: 90
+
+generation:
+  enabled: false
+  max_examples: 100
+  deadline_ms: 200
+  timeout_seconds: 180
+  seed: 0
+
+mutation:
+  enabled: false
+  backend: ast
+  # Set backend: cosmic-ray only with verifypatch[mutation] installed.
+  # Silent fallback is not used; set fallback: ast to allow it explicitly.
+  fallback: null
+  max_mutants: 100
+  timeout_seconds: 600
+  per_mutant_timeout_seconds: auto
+  workers: 1
+  operators:
+    - comparison
+    - boolean
+    - arithmetic
+    - constants
+
+behavior:
+  enabled: false
+  timeout_seconds: 180
+  max_inputs_per_target: 50
+  targets: []
+
+policy:
+  # Enforcement is only activated by --enforce. This file cannot make policy enforced.
+  incomplete: review
+  minimum_pr_untouched_changed_line_coverage: null
+  minimum_independent_mutation_score: null
+  block_on_findings: []
+  review_on_findings:
+    - TEST_SKIP_ADDED
+    - TEST_XFAIL_ADDED
+    - ASSERT_TO_TRUTHY
+  block_on_deleted_tests: false
+  require_stages: []

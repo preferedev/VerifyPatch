@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://verifypatch.dev/schemas/verifypatch-requirements-v1.schema.json",
+  "title": "VerifyPatch extracted requirements v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "prompt_version", "items"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1" },
+    "prompt_version": { "type": "string", "minLength": 1 },
+    "provider": { "type": ["string", "null"] },
+    "model": { "type": ["string", "null"] },
+    "request_id": { "type": ["string", "null"] },
+    "constrained_output": { "type": ["boolean", "null"] },
+    "refusal": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1 },
+        "message": { "type": "string", "minLength": 1 }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/requirement" }
+    }
+  },
+  "$defs": {
+    "citation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "path", "start_line", "end_line", "digest"],
+      "properties": {
+        "ref": { "type": "string", "minLength": 1, "description": "Exact immutable Git ref of the approved source snapshot (merge-base SHA)." },
+        "path": { "type": "string", "minLength": 1, "description": "Repository-relative POSIX path of the cited snapshot." },
+        "start_line": { "type": "integer", "minimum": 1, "description": "Inclusive 1-based start line within the snapshot." },
+        "end_line": { "type": "integer", "minimum": 1, "description": "Inclusive 1-based end line; must be >= start_line and in-bounds." },
+        "digest": {
+          "type": "string",
+          "minLength": 1,
+          "description": "SHA-256 hex digest of the exact cited line range: UTF-8 bytes of those lines joined by a single newline, with no extra trailing newline after the last cited line. This is not the whole-snapshot digest unless the range is the entire snapshot text."
+        }
+      }
+    },
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "statement",
+        "kind",
+        "confidence",
+        "executable",
+        "citations"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "statement": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string", "minLength": 1 },
+        "target_module": { "type": ["string", "null"] },
+        "target_callable": { "type": ["string", "null"] },
+        "parameters": { "type": "object" },
+        "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+        "executable": { "type": "boolean" },
+        "citations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/citation" }
+        },
+        "assumptions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "refusal_reason": { "type": ["string", "null"] },
+        "non_executable_reason": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

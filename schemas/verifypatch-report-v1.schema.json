@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://verifypatch.dev/schemas/verifypatch-report-v1.schema.json",
+  "title": "VerifyPatch Independent Verification Report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tool_version",
+    "status",
+    "requested_refs",
+    "resolved_refs",
+    "diff",
+    "coverage",
+    "tests",
+    "findings",
+    "line_evidence",
+    "warnings",
+    "caveats"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1" },
+    "tool_version": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["complete", "incomplete", "error"] },
+    "requested_refs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["base", "head"],
+      "properties": {
+        "base": { "type": "string", "minLength": 1 },
+        "head": { "type": "string", "minLength": 1 }
+      }
+    },
+    "resolved_refs": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["base", "head", "merge_base"],
+      "properties": {
+        "base": { "type": "string", "minLength": 1 },
+        "head": { "type": "string", "minLength": 1 },
+        "merge_base": { "type": "string", "minLength": 1 }
+      }
+    },
+    "diff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "production_files_changed",
+        "test_files_changed",
+        "shared_test_infrastructure_changed",
+        "files_added",
+        "files_modified",
+        "files_deleted",
+        "files_renamed",
+        "production_lines_deleted"
+      ],
+      "properties": {
+        "production_files_changed": { "type": "integer", "minimum": 0 },
+        "test_files_changed": { "type": "integer", "minimum": 0 },
+        "shared_test_infrastructure_changed": { "type": "integer", "minimum": 0 },
+        "files_added": { "type": "integer", "minimum": 0 },
+        "files_modified": { "type": "integer", "minimum": 0 },
+        "files_deleted": { "type": "integer", "minimum": 0 },
+        "files_renamed": { "type": "integer", "minimum": 0 },
+        "production_lines_deleted": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "changed_executable_lines",
+        "covered_by_pr_untouched_tests",
+        "covered_only_by_pr_touched_tests",
+        "covered_only_by_unknown_contexts",
+        "uncovered",
+        "pr_untouched_changed_line_coverage"
+      ],
+      "properties": {
+        "changed_executable_lines": { "type": "integer", "minimum": 0 },
+        "covered_by_pr_untouched_tests": { "type": "integer", "minimum": 0 },
+        "covered_only_by_pr_touched_tests": { "type": "integer", "minimum": 0 },
+        "covered_only_by_unknown_contexts": { "type": "integer", "minimum": 0 },
+        "uncovered": { "type": "integer", "minimum": 0 },
+        "pr_untouched_changed_line_coverage": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "tests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outcomes", "changes", "pytest_exit_code"],
+      "properties": {
+        "outcomes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "passed",
+            "failed",
+            "skipped",
+            "xfailed",
+            "xpassed",
+            "error",
+            "collected"
+          ],
+          "properties": {
+            "passed": { "type": "integer", "minimum": 0 },
+            "failed": { "type": "integer", "minimum": 0 },
+            "skipped": { "type": "integer", "minimum": 0 },
+            "xfailed": { "type": "integer", "minimum": 0 },
+            "xpassed": { "type": "integer", "minimum": 0 },
+            "error": { "type": "integer", "minimum": 0 },
+            "collected": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "changes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "files_changed",
+            "nodes_added",
+            "nodes_removed",
+            "nodes_modified",
+            "shared_infrastructure_changed"
+          ],
+          "properties": {
+            "files_changed": { "type": "integer", "minimum": 0 },
+            "nodes_added": { "type": "integer", "minimum": 0 },
+            "nodes_removed": { "type": "integer", "minimum": 0 },
+            "nodes_modified": { "type": "integer", "minimum": 0 },
+            "shared_infrastructure_changed": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "pytest_exit_code": { "type": ["integer", "null"] }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "severity", "path", "detail"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "TEST_SKIP_ADDED",
+              "TEST_XFAIL_ADDED",
+              "BROAD_EXCEPT_ADDED",
+              "ASSERT_TO_TRUTHY",
+              "TEST_REMOVED",
+              "ASSERT_COUNT_DROP"
+            ]
+          },
+          "severity": { "type": "string", "enum": ["notice", "review"] },
+          "path": { "type": "string", "minLength": 1 },
+          "line": { "type": ["integer", "null"], "minimum": 1 },
+          "test_node_id": { "type": ["string", "null"] },
+          "before": { "type": ["string", "null"] },
+          "after": { "type": ["string", "null"] },
+          "detail": { "type": "string" }
+        }
+      }
+    },
+    "line_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "line", "classification", "covering_node_ids", "notes"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "line": { "type": "integer", "minimum": 1 },
+          "classification": {
+            "type": "string",
+            "enum": [
+              "pr_untouched",
+              "pr_touched_only",
+              "unknown_only",
+              "uncovered"
+            ]
+          },
+          "covering_node_ids": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "notes": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "message"],
+        "properties": {
+          "code": { "type": "string", "minLength": 1 },
+          "message": { "type": "string", "minLength": 1 },
+          "path": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "caveats": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "coverage_overrides": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "value", "reason"],
+        "properties": {
+          "key": { "type": "string" },
+          "value": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    }
+  }
+}
