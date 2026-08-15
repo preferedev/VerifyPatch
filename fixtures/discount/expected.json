@@ -1,0 +1,191 @@
+{
+  "schema_version": "1",
+  "tool_version": "<TOOL_VERSION>",
+  "status": "complete",
+  "requested_refs": {
+    "base": "<BASE>",
+    "head": "<HEAD>"
+  },
+  "resolved_refs": {
+    "base": "<BASE_SHA>",
+    "head": "<HEAD_SHA>",
+    "merge_base": "<MERGE_BASE_SHA>"
+  },
+  "diff": {
+    "production_files_changed": 3,
+    "test_files_changed": 1,
+    "shared_test_infrastructure_changed": 0,
+    "files_added": 1,
+    "files_modified": 3,
+    "files_deleted": 0,
+    "files_renamed": 0,
+    "production_lines_deleted": 3
+  },
+  "coverage": {
+    "changed_executable_lines": 8,
+    "covered_by_pr_untouched_tests": 2,
+    "covered_only_by_pr_touched_tests": 2,
+    "covered_only_by_unknown_contexts": 0,
+    "uncovered": 4,
+    "pr_untouched_changed_line_coverage": 0.25
+  },
+  "tests": {
+    "outcomes": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 1,
+      "xfailed": 0,
+      "xpassed": 0,
+      "error": 0,
+      "collected": 4
+    },
+    "changes": {
+      "files_changed": 1,
+      "nodes_added": 0,
+      "nodes_removed": 0,
+      "nodes_modified": 2,
+      "shared_infrastructure_changed": 0
+    },
+    "pytest_exit_code": 0
+  },
+  "findings": [
+    {
+      "id": "TEST_SKIP_ADDED",
+      "severity": "review",
+      "path": "tests/test_inventory.py",
+      "detail": "Skip was added to test_restock_accepts_positive.",
+      "line": 7,
+      "test_node_id": "test_restock_accepts_positive",
+      "before": "def test_restock_accepts_positive():\n    assert restock(3) == 3",
+      "after": "def test_restock_accepts_positive():\n    assert restock(3)"
+    },
+    {
+      "id": "ASSERT_TO_TRUTHY",
+      "severity": "review",
+      "path": "tests/test_inventory.py",
+      "detail": "An equality/identity assertion in test_restock_accepts_positive became a bare truthiness assertion.",
+      "line": 7,
+      "test_node_id": "test_restock_accepts_positive",
+      "before": "def test_restock_accepts_positive():\n    assert restock(3) == 3",
+      "after": "def test_restock_accepts_positive():\n    assert restock(3)"
+    },
+    {
+      "id": "BROAD_EXCEPT_ADDED",
+      "severity": "review",
+      "path": "tests/test_inventory.py",
+      "detail": "A bare except or except Exception was added in test_restock_rejects_zero.",
+      "line": 11,
+      "test_node_id": "test_restock_rejects_zero",
+      "before": "def test_restock_rejects_zero():\n    import pytest\n\n    with pytest.raises(ValueError):\n        restock(0)",
+      "after": "def test_restock_rejects_zero():\n    try:\n        restock(0)\n    except Exception:\n        pass"
+    }
+  ],
+  "line_evidence": [
+    {
+      "path": "src/inventory.py",
+      "line": 2,
+      "classification": "pr_touched_only",
+      "covering_node_ids": [
+        "tests/test_inventory.py::test_restock_rejects_zero"
+      ],
+      "notes": [
+        "test_file_changed:tests/test_inventory.py"
+      ]
+    },
+    {
+      "path": "src/inventory.py",
+      "line": 4,
+      "classification": "pr_touched_only",
+      "covering_node_ids": [
+        "tests/test_inventory.py::test_restock_rejects_zero"
+      ],
+      "notes": [
+        "test_file_changed:tests/test_inventory.py"
+      ]
+    },
+    {
+      "path": "src/pricing.py",
+      "line": 6,
+      "classification": "pr_untouched",
+      "covering_node_ids": [
+        "tests/test_pricing.py::test_final_price_applies_discount"
+      ],
+      "notes": []
+    },
+    {
+      "path": "src/pricing.py",
+      "line": 7,
+      "classification": "pr_untouched",
+      "covering_node_ids": [
+        "tests/test_pricing.py::test_final_price_applies_discount"
+      ],
+      "notes": []
+    },
+    {
+      "path": "src/promo.py",
+      "line": 1,
+      "classification": "uncovered",
+      "covering_node_ids": [],
+      "notes": []
+    },
+    {
+      "path": "src/promo.py",
+      "line": 2,
+      "classification": "uncovered",
+      "covering_node_ids": [],
+      "notes": []
+    },
+    {
+      "path": "src/promo.py",
+      "line": 3,
+      "classification": "uncovered",
+      "covering_node_ids": [],
+      "notes": []
+    },
+    {
+      "path": "src/promo.py",
+      "line": 4,
+      "classification": "uncovered",
+      "covering_node_ids": [],
+      "notes": []
+    }
+  ],
+  "warnings": [],
+  "caveats": [
+    "No correctness score or automatic recommendation was produced.",
+    "PR-untouched evidence means this pull request did not modify the covering test file or known related test infrastructure. It does not identify who originally authored those tests.",
+    "VerifyPatch observes Git provenance. It does not prove which human or agent process wrote historical tests."
+  ],
+  "coverage_overrides": [
+    {
+      "key": "data_file",
+      "value": "<COVERAGE_DATA_FILE>",
+      "reason": "Isolate VerifyPatch coverage data from the customer data file."
+    },
+    {
+      "key": "relative_files",
+      "value": "true",
+      "reason": "Normalize coverage paths to repository-relative POSIX paths."
+    },
+    {
+      "key": "branch",
+      "value": "false",
+      "reason": "v1 contract uses line coverage, not branch coverage."
+    },
+    {
+      "key": "parallel",
+      "value": "false",
+      "reason": "v1 supports a single pytest process."
+    },
+    {
+      "key": "dynamic_context",
+      "value": "",
+      "reason": "VerifyPatch sets exact pytest node IDs via its plugin."
+    },
+    {
+      "key": "core",
+      "value": "ctrace",
+      "reason": "Dynamic pytest node-ID contexts require the C tracer, not sysmon."
+    }
+  ]
+}

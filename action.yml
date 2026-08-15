@@ -1,0 +1,152 @@
+name: VerifyPatch
+description: Independent verification report for Python/pytest pull requests
+author: VerifyPatch
+inputs:
+  base:
+    description: Git ref or SHA for the pull request base
+    required: true
+  head:
+    description: Git ref or SHA for the pull request head
+    required: false
+    default: HEAD
+  command:
+    description: VerifyPatch command to run (check or verify)
+    required: false
+    default: check
+  pytest-args:
+    description: Extra arguments forwarded to pytest
+    required: false
+    default: ""
+  timeout:
+    description: Wall-clock timeout in seconds for the pytest coverage run
+    required: false
+    default: "600"
+  json-out:
+    description: JSON report path
+    required: false
+    default: verifypatch.json
+  md-out:
+    description: Markdown report path
+    required: false
+    default: verifypatch.md
+  config:
+    description: Path to verifypatch.yml for verify
+    required: false
+    default: ""
+  schema-version:
+    description: Report schema version (1 or 2). Empty uses the command default.
+    required: false
+    default: ""
+  requirements:
+    description: "true to enable requirement extraction (verify only)"
+    required: false
+    default: ""
+  generate:
+    description: "true to enable generated tests (verify only)"
+    required: false
+    default: ""
+  mutation:
+    description: "true to enable mutation testing (verify only)"
+    required: false
+    default: ""
+  behavior:
+    description: "true to enable behavioral replay (verify only)"
+    required: false
+    default: ""
+  enforce:
+    description: "true to return exit code 3 when policy decides block"
+    required: false
+    default: "false"
+  artifacts-dir:
+    description: Artifact directory for verify
+    required: false
+    default: ""
+  optional-timeout:
+    description: Combined optional-stage timeout in seconds
+    required: false
+    default: ""
+outputs:
+  json-path:
+    description: Absolute path to the JSON report
+    value: ${{ steps.run.outputs.json-path }}
+  md-path:
+    description: Absolute path to the Markdown report
+    value: ${{ steps.run.outputs.md-path }}
+runs:
+  using: composite
+  steps:
+    - name: Install VerifyPatch
+      shell: bash
+      run: python -m pip install "${{ github.action_path }}"
+    - name: Run VerifyPatch
+      id: run
+      shell: bash
+      env:
+        VERIFYPATCH_BASE: ${{ inputs.base }}
+        VERIFYPATCH_HEAD: ${{ inputs.head }}
+        VERIFYPATCH_COMMAND: ${{ inputs.command }}
+        VERIFYPATCH_PYTEST_ARGS: ${{ inputs.pytest-args }}
+        VERIFYPATCH_TIMEOUT: ${{ inputs.timeout }}
+        VERIFYPATCH_JSON_OUT: ${{ inputs.json-out }}
+        VERIFYPATCH_MD_OUT: ${{ inputs.md-out }}
+        VERIFYPATCH_CONFIG: ${{ inputs.config }}
+        VERIFYPATCH_SCHEMA_VERSION: ${{ inputs.schema-version }}
+        VERIFYPATCH_REQUIREMENTS: ${{ inputs.requirements }}
+        VERIFYPATCH_GENERATE: ${{ inputs.generate }}
+        VERIFYPATCH_MUTATION: ${{ inputs.mutation }}
+        VERIFYPATCH_BEHAVIOR: ${{ inputs.behavior }}
+        VERIFYPATCH_ENFORCE: ${{ inputs.enforce }}
+        VERIFYPATCH_ARTIFACTS_DIR: ${{ inputs.artifacts-dir }}
+        VERIFYPATCH_OPTIONAL_TIMEOUT: ${{ inputs.optional-timeout }}
+      run: |
+        set -euo pipefail
+        cmd=(python -m verifypatch "${VERIFYPATCH_COMMAND}" --base "${VERIFYPATCH_BASE}" --head "${VERIFYPATCH_HEAD}" --json-out "${VERIFYPATCH_JSON_OUT}" --md-out "${VERIFYPATCH_MD_OUT}" --timeout "${VERIFYPATCH_TIMEOUT}" --pytest-args "${VERIFYPATCH_PYTEST_ARGS}")
+        if [ -n "${VERIFYPATCH_SCHEMA_VERSION}" ]; then
+          cmd+=(--schema-version "${VERIFYPATCH_SCHEMA_VERSION}")
+        fi
+        if [ "${VERIFYPATCH_COMMAND}" = "verify" ]; then
+          if [ -n "${VERIFYPATCH_CONFIG}" ]; then
+            cmd+=(--config "${VERIFYPATCH_CONFIG}")
+          fi
+          if [ "${VERIFYPATCH_REQUIREMENTS}" = "true" ]; then
+            cmd+=(--requirements)
+          fi
+          if [ "${VERIFYPATCH_REQUIREMENTS}" = "false" ]; then
+            cmd+=(--no-requirements)
+          fi
+          if [ "${VERIFYPATCH_GENERATE}" = "true" ]; then
+            cmd+=(--generate)
+          fi
+          if [ "${VERIFYPATCH_GENERATE}" = "false" ]; then
+            cmd+=(--no-generate)
+          fi
+          if [ "${VERIFYPATCH_MUTATION}" = "true" ]; then
+            cmd+=(--mutation)
+          fi
+          if [ "${VERIFYPATCH_MUTATION}" = "false" ]; then
+            cmd+=(--no-mutation)
+          fi
+          if [ "${VERIFYPATCH_BEHAVIOR}" = "true" ]; then
+            cmd+=(--behavior)
+          fi
+          if [ "${VERIFYPATCH_BEHAVIOR}" = "false" ]; then
+            cmd+=(--no-behavior)
+          fi
+          if [ "${VERIFYPATCH_ENFORCE}" = "true" ]; then
+            cmd+=(--enforce)
+          fi
+          if [ -n "${VERIFYPATCH_ARTIFACTS_DIR}" ]; then
+            cmd+=(--artifacts-dir "${VERIFYPATCH_ARTIFACTS_DIR}")
+          fi
+          if [ -n "${VERIFYPATCH_OPTIONAL_TIMEOUT}" ]; then
+            cmd+=(--optional-timeout "${VERIFYPATCH_OPTIONAL_TIMEOUT}")
+          fi
+        fi
+        "${cmd[@]}"
+        json_path="$(python -c 'import os,pathlib; print(pathlib.Path(os.environ["VERIFYPATCH_JSON_OUT"]).resolve())')"
+        md_path="$(python -c 'import os,pathlib; print(pathlib.Path(os.environ["VERIFYPATCH_MD_OUT"]).resolve())')"
+        echo "json-path=${json_path}" >> "$GITHUB_OUTPUT"
+        echo "md-path=${md_path}" >> "$GITHUB_OUTPUT"
+        if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+          cat "${VERIFYPATCH_MD_OUT}" >> "${GITHUB_STEP_SUMMARY}"
+        fi

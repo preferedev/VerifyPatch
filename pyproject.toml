@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "verifypatch"
+version = "0.2.0"
+description = "Evidence provenance for Python/pytest pull requests."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [{ name = "VerifyPatch" }]
+dependencies = [
+  "coverage>=7.4",
+  "jsonschema>=4.20",
+  "pytest>=7.4",
+  "tomli>=2.0.1; python_version < '3.11'",
+]
+
+[project.optional-dependencies]
+dev = [
+  "build>=1.0",
+  "PyYAML>=6",
+]
+openai = ["openai>=1.40"]
+anthropic = ["anthropic>=0.121,<1"]
+generation = ["hypothesis>=6"]
+mutation = ["cosmic-ray>=8.7,<9"]
+v2 = [
+  "openai>=1.40",
+  "anthropic>=0.121,<1",
+  "hypothesis>=6",
+  "cosmic-ray>=8.7,<9",
+  "PyYAML>=6",
+]
+
+[project.scripts]
+verifypatch = "verifypatch.cli:main"
+
+[project.entry-points.pytest11]
+verifypatch = "verifypatch.pytest_plugin"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["**/__pycache__/*", "*.py[cod]"]
+
+[tool.setuptools.package-data]
+verifypatch = [
+  "py.typed",
+  "verifypatch-report-v1.schema.json",
+  "verifypatch-report-v2.schema.json",
+  "verifypatch-requirements-v1.schema.json",
+  "requirements/prompts/*.txt",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "src"]
+addopts = "-q"
+markers = [
+  "live_provider: optional live provider smoke tests (deselected unless VERIFYPATCH_LIVE_PROVIDERS=1)",
+]
+
+[tool.coverage.run]
+relative_files = true
+branch = false
+
+[tool.verifypatch]
+test_paths = ["tests"]
+timeout_seconds = 600

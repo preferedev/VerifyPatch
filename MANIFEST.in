@@ -1,0 +1,14 @@
+include CHANGELOG.md
+include LICENSE
+include README.md
+include action.yml
+include benchmarks.md
+include verifypatch.example.yml
+graft docs
+graft schemas
+graft examples
+graft src/verifypatch
+global-exclude *.py[cod]
+global-exclude __pycache__
+global-exclude .DS_Store
+global-exclude *.so
